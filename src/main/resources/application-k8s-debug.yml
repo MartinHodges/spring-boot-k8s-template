@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db-cluster-rw.pg.svc:5432/myapp?currentSchema=myapp
+    username: ${STATIC_DB_USERNAME}
+    password: ${STATIC_DB_PASSWORD}
+
+  jpa:
+    properties:
+      hibernate:
+        default_schema: "myapp"
+    hibernate:
+      # <create | create-drop | update | validate | none>
+      ddl-auto: create
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      # pretty print SLQ commands
+      format_sql: true
+    # enable debugging of SQL commands
+    show-sql: true
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+
+  liquibase:
+    enabled: true
+    default_schema: "myapp"
+
+  cloud:
+    vault:
+      enabled: false
+
+# log SQL commands
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db-cluster-rw.pg.svc:5432/myapp?currentSchema=myapp
+    # username: injected from Vault
+    # password: injected from Vault
+
+  jpa:
+    properties:
+      hibernate:
+        default_schema: "myapp"
+    hibernate:
+      # <create | create-drop | update | validate | none>
+      ddl-auto: create
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      # pretty print SLQ commands
+      format_sql: true
+    # enable debugging of SQL commands
+    show-sql: true
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+  liquibase:
+    enabled: true
+    default_schema: "myapp"
+
+  cloud:
+    vault:
+      token: ${CLOUD_VAULT_TOKEN}
+      uri: http://vault-active.vault:8200
+      kv.enabled: true
+      database.enabled: false
+  config:
+    import:  vault://
+
+# log SQL commands
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

@@ -1,0 +1,11 @@
+vault write database/config/postgresql -<<EOF
+{
+  "plugin_name": "postgresql-database-plugin",
+  "allowed_roles": "quotes_readonly",
+  "connection_url": "postgresql://{{username}}:{{password}}@db-cluster-rw.pg.svc:5432/postgres",
+  "max_open_connections": 5,
+  "max_connection_lifetime": "5s",
+  "username": "postgres",
+  "password": "super-secret"
+}
+EOF

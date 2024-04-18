@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sb-k8s-template
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sb-k8s-template
+  template:
+    metadata:
+      labels:
+        app: sb-k8s-template
+    annotations:
+      vault.hashicorp.com/agent-inject: 'true'
+      vault.hashicorp.com/role: 'internal-app'
+
+    spec:
+      containers:
+      - name: sb-k8s-template
+        image: sb-k8s-template:01
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8080
+        env:
+          - name: STATIC_DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: static-db-credentials
+                key: username
+          - name: STATIC_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: static-db-credentials
+                key: password

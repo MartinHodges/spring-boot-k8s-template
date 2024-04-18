@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:myapp
+    username: ${db.username}
+    password: ${db.password}
+    driverClassName: org.h2.Driver
+    jpa:
+      database-platform: org.hibernate.dialect.H2Dialect
+      properties:
+        hibernate:
+          default_schema: myapp
+      hibernate:
+        # <create | create-drop | update | validate | none>
+        ddl-auto: update
+        dialect: org.hibernate.dialect.H2Dialect
+      # pretty print SLQ commands
+        format_sql: true
+      # enable debugging of SQL commands
+      show-sql: true
+      generate-ddl: true
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+  liquibase:
+    enabled: false
+  cloud:
+    vault:
+      enabled: false
+
+# log SQL commands
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: INFO
