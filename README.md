@@ -62,7 +62,7 @@ Under the other profiles, it expects to get its credentials from Vault within th
 
 ## Additional documentation
 You can find more documentation about the project in
-[this medium article](). You will also find references 
+[this medium article](https://medium.com/@martin.hodges/creating-a-spring-boot-application-template-to-use-with-your-kubernetes-cluster-1d601eb1f715). You will also find references 
 in this article to other articles that explain how to
 set up a local Kubernetes cluster using Kind.
 
