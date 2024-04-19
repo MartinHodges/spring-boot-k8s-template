@@ -20,6 +20,10 @@ spec:
         ports:
           - containerPort: 8080
         env:
+          # Note that the following environment variable is converted to a
+          # property override called spring.profiles.active when read by Spring
+          - name: SPRING_PROFILES_ACTIVE
+            value: k8s-debug
           - name: STATIC_DB_USERNAME
             valueFrom:
               secretKeyRef:

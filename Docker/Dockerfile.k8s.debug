@@ -3,5 +3,5 @@ RUN addgroup --system spring && useradd --system spring -g spring
 USER spring:spring
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:Î8000","-jar","-Dspring.profiles.active=k8s-debug","/app.jar"]
-EXPOSE 8080 8081
+ENTRYPOINT ["java","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000","-jar","/app.jar"]
+EXPOSE 8000 8080 8081
