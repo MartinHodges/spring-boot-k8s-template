@@ -5,6 +5,12 @@ spring:
     active: standalone
   # datasources are to be defined within profile specific properties files
 
+application:
+  dynamic-db-config:
+    enabled: false
+    filename: ""
+    refresh: 5
+
 management:
   endpoints:
     web:

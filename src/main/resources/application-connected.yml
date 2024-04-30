@@ -3,28 +3,24 @@ spring:
     url: jdbc:postgresql://localhost:31321/myapp?currentSchema=myapp
     username: ${db.username}
     password: ${db.password}
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
 
   jpa:
     properties:
       hibernate:
         default_schema: "myapp"
+        # pretty print SLQ commands
+        format_sql: true
     hibernate:
       # <create | create-drop | update | validate | none>
       ddl-auto: create
-      dialect: org.hibernate.dialect.PostgreSQLDialect
-      # pretty print SLQ commands
-      format_sql: true
     # enable debugging of SQL commands
     show-sql: true
-    hikari:
-      connectionTimeout: 20000
-      maximumPoolSize: 5
   liquibase:
     enabled: true
     default_schema: "myapp"
-  cloud:
-    vault:
-      enabled: false
 
 # log SQL commands
 logging:

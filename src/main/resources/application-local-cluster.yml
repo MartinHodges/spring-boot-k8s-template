@@ -1,36 +1,33 @@
 spring:
   datasource:
     url: jdbc:postgresql://db-cluster-rw.pg.svc:5432/myapp?currentSchema=myapp
-    # username: injected from Vault
-    # password: injected from Vault
+    # username: injected using Vault Injector
+    # password: injected using Vault Injector
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
 
   jpa:
     properties:
       hibernate:
         default_schema: "myapp"
+        # pretty print SLQ commands
+        format_sql: true
     hibernate:
       # <create | create-drop | update | validate | none>
       ddl-auto: create
-      dialect: org.hibernate.dialect.PostgreSQLDialect
-      # pretty print SLQ commands
-      format_sql: true
     # enable debugging of SQL commands
     show-sql: true
-    hikari:
-      connectionTimeout: 20000
-      maximumPoolSize: 5
   liquibase:
     enabled: true
     default_schema: "myapp"
 
-  cloud:
-    vault:
-      token: ${CLOUD_VAULT_TOKEN}
-      uri: http://vault-active.vault:8200
-      kv.enabled: true
-      database.enabled: false
-  config:
-    import:  vault://
+application:
+  dynamic-db-config:
+    enabled: true
+    filename: "/vault/secrets/sb-k8s-db.creds"
+    refresh: 5
+
 
 # log SQL commands
 logging:
