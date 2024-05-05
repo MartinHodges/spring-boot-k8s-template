@@ -32,12 +32,12 @@ public class DatabaseDynamicCredentialsJob {
     private final HikariDataSource hikariDataSource;
 
     @Scheduled(
-            fixedDelayString = "$(application.dynamic-db-config.refresh:5)",
+            fixedDelayString = "${application.dynamic-db-config.refresh:5}",
             timeUnit = TimeUnit.MINUTES
     )
     public void checkForRefreshedCredentials() throws IOException {
         if (dynamicDbEnabled) {
-            log.debug("Checking for refreshed database credentials");
+            log.info("Checking for refreshed database credentials");
             Map<String,String> credentials = readCredentialsFromFile(dynamicDbCredentialsFilename);
             String username = credentials.get("username");
             String password = credentials.get("password");
@@ -63,9 +63,6 @@ public class DatabaseDynamicCredentialsJob {
             log.error("Invalid dynamic database file contents: Expected 2 lines, got {}", lines.size());
             return values;
         }
-
-//        values.put("username","app-user");
-//        values.put("password","app-secret");
 
         lines.forEach(line ->
             {
