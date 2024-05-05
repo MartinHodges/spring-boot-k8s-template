@@ -1,0 +1,6 @@
+{
+  "bound_service_account_names": "myapp-sa",
+  "bound_service_account_namespaces": "default",
+  "token_policies": "myapp-db-policy",
+  "ttl": "1h"
+}

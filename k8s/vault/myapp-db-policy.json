@@ -1,0 +1,3 @@
+{
+  "policy":"path \"myapp-db/creds/myapp-db-role\" {\n capabilities = [\"read\"]\n}"
+}

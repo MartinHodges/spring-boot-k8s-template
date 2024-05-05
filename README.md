@@ -51,8 +51,8 @@ The REST API end points are at:
 As the template is functional, you can run it in three ways (enable the given profile for each):
 1. `standalone` - Within your IDE as a standalone Spring Boot app, using an ephemeral H2 database
 2. `connected` - Within your IDE as a standalone Spring Boot app, using the database exposed from your cluster 
-2. `k8s-debug` - Within your cluster, exposing debug end points for your IDE to attach to
-3. `local-cluster` - Within your cluster as a fuly integrated solution
+3`k8s-debug` - Within your cluster, exposing debug end points for your IDE to attach to
+4`local-cluster` - Within your cluster as a fuly integrated solution
 
 ### Database credentials
 In both `standalone` and `connected` profiles, you need to supply your passwords via the JVM command
@@ -106,14 +106,17 @@ kubectl apply -f kind/db-user-config.yml
 kubectl apply -f kind/db-config.yml
 
 kubectl create namespace vault
-helm install vault hashicorp/vault -f kind/vault-config.yml -n vault
+helm install vault hashicorp/vault -f kind/vault-config-sa.yml -n vault
 
 kubectl create namespace eso
 helm install external-secrets external-secrets/external-secrets -n eso
 ```
 
-Now you have installed Vault, you now need to initialise it and then unseal
-all 3 instances. Forst get a command line in the first instance:
+*Note that using kind/vault-config-sa.yml, you only get a single instance.*
+*If you want a high availability deployment, use kind/vault-config-ha.yml*
+
+Now you have installed Vault, you now need to initialise and unseal it. 
+Get a command line in the first instance:
 ```
 kubectl exec -it vault-0 -n vault -- sh
 ```
@@ -138,7 +141,8 @@ Exit from this instance.
 ```
 exit
 ```
-Go to the next instance:
+***If you installed the HA configuration, you need to unseal
+the other 2 instances.***  Go to the next instance:
 ```
 kubectl exec -it vault-1 -n vault -- sh
 vault operator raft join http://vault-active:8200
@@ -161,8 +165,9 @@ use with your application.
 You can run this application using the 4 profiles mentioned earlier.
 
 ### Standalone
-In this profile, the application runs on an H2 in-memory database
-and does not require any Kubernetes cluster.
+In this profile, the application runs on an H2 file-backed database
+and does not require any Kubernetes cluster. A file is used to allow
+liquibase to work. The files are located in your home folder.
 
 You can build and run the application with:
 ```
@@ -172,7 +177,7 @@ The API will be available on http://localhost:8080
 
 ### Connected
 In this profile, the application runs and connects to your
-postgres dataabse in your cluster, which it expects to find
+postgres database in your cluster, which it expects to find
 on `localhost:31321`.
 
 You can build and run this application with:
@@ -217,14 +222,46 @@ You can connect a DB client to the database on http://localhost:32321
 
 ### local-cluster
 Like the `k8s-debug' profile, this profile runs as a JAR file in a Docker
-image and can be created as described above.
+image. Before deploying the application, you need to update the Vault 
+configuration. You can read more about these instructions in [this medium article]() 
 
-***Currently this version of the repository does not support this profile***
+From the Vault initialisation step, create an environment variable to hold
+the Vault token:
 
-A future version will implement the required Kubernetes
-deployment to support this. There are work in progress files 
-contained in this version but these should not be used:
 ```
-k8s/vault/**
-k8s/local-cluster-deployment
+export VAULT_TOKEN=<ROOT_TOKEN>
 ```
+Now set up Vault to integrate to Kubernetes and to your Postgres database:
+```
+curl -X POST -H "X-Vault-Token: ${VAULT_TOKEN}" http://localhost:31400/v1/sys/mounts/myapp-db -d @k8s/vault/enable-db-engine.json
+```
+
+Creaet a user in the database to create other users and then include the
+username and password in the '''k8s/vault/myapp-db-cnx.json``` file.
+Once you have done this, install this configuration with:
+```
+curl -X POST -H "X-Vault-Token: ${VAULT_TOKEN}" http://localhost:31400/v1/myapp-db/config/myapp-db-cnx -d @k8s/vault/myapp-db-cnx.json
+curl -X POST -H "X-Vault-Token: ${VAULT_TOKEN}" http://localhost:31400/v1/myapp-db/roles/myapp-db-role -d @k8s/vault/myapp-db-role.json
+curl -X POST -H "X-Vault-Token: ${VAULT_TOKEN}" http://localhost:31400/v1/sys/auth/kubernetes -d @k8s/vault/enable-k8s-engine.json
+curl -X POST -H "X-Vault-Token: ${VAULT_TOKEN}" http://localhost:31400/v1/auth/kubernetes/config -d @k8s/vault/vault-k8s-config.json
+curl -X POST -H "X-Vault-Token: ${VAULT_TOKEN}" http://localhost:31400/v1/sys/policies/acl/myapp-db-policy -d @k8s/vault/myapp-db-policy.json
+curl -X POST -H "X-Vault-Token: ${VAULT_TOKEN}" http://localhost:31400/v1/auth/kubernetes/role/myapp-k8s-role -d @k8s/vault/myapp-k8s-role.json
+kubectl apply -f k8s/myapp-service-account.yml
+
+```
+
+To create the image after building the JAR file, use:
+
+```docker build -t sb-k8s-template:01 -f Docker/Dockerfile.local-cluster .```
+
+You can now upload it to your cluster with:
+```
+kind load docker-image sb-k8s-template:01 
+```
+Then deploy it with:
+```
+kubectl apply -f k8s/local-cluster-deploymnet.yml
+```
+This will start the application along with a Vault Agent. The Vault Agent
+will obtain the database credentials on behalf of the application.
+

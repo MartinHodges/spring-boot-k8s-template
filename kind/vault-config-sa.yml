@@ -9,22 +9,24 @@ ui:
 server:
   dataStorage:
     storageClass: standard
+  logLevel: debug
   ha:
+    enabled: false
+  standalone:
     enabled: true
-    replicas: 3
     raft:
       enabled: true
-      setNodeId: true
       config: |
         ui = true
-        cluster_name = "vault-integrated-storage"
-        storage "raft" {
-           path  = "/vault/data/"
-        }
-        
         listener "tcp" {
            address = "0.0.0.0:8200"
            cluster_address = "0.0.0.0:8201"
            tls_disable = "true"
         }
-        service_registration "kubernetes" {}
+        storage "file" {
+          path = "/vault/data"
+        }
+
+injector:
+  enabled: true
+  logLevel: debug
