@@ -25,7 +25,7 @@ spring:
 application:
   dynamic-db-config:
     enabled: true
-    filename: "/vault/secrets/myapp-db"
+    filename: "/vault/secrets/myapp-db.creds"
     refresh: 5
 
 
